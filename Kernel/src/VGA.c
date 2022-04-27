@@ -25,14 +25,24 @@ static u8 ToColor(u8 background_color, u8 cursor_color) {
 static u16 GetCursorPosition() {
     u16 position = 0;
     WriteByte(CURSOR_PORT_COMMAND, 0xf);
-    // position |= ReadByte(CURSOR_PORT_DATA);
-    // WriteByte(CURSOR_PORT_COMMAND, 0xe);
-    // position |= ReadByte(CURSOR_PORT_DATA);
+    position |= ReadByte(CURSOR_PORT_DATA);
+    WriteByte(CURSOR_PORT_COMMAND, 0xe);
+    position |= ReadByte(CURSOR_PORT_DATA);
     return position;
 }
 
 static void AdvanceCursor() {
     u16 cursor_position = GetCursorPosition();
+    cursor_position += 1;
+    if (cursor_position >= VGA_SIZE) {
+        cursor_position = VGA_SIZE - 1;
+    }
+
+    WriteByte(CURSOR_PORT_COMMAND, 0xf);
+    WriteByte(CURSOR_PORT_DATA, (u8) (cursor_position & 0xff));
+
+    WriteByte(CURSOR_PORT_COMMAND, 0xe);
+    WriteByte(CURSOR_PORT_DATA, (u8) ((cursor_position >> 8) & 0xff));
 }
 
 void ClearText(u8 background_color, u8 cursor_color) {
@@ -53,7 +63,21 @@ void WriteText(char *str, u8 background_color, u8 cursor_color) {
         }
 
         char_info.character = str[i];
-        text_area[i] = char_info;
+        u16 cursor_position = GetCursorPosition();
+        text_area[cursor_position] = char_info;
         AdvanceCursor();
     }
+}
+
+void SetCursorPosition(u8 x, u8 y) {
+    u16 cursor_position = x + ((u16) VGA_WIDTH * y);
+    if (cursor_position >= VGA_SIZE) {
+        cursor_position = VGA_SIZE - 1;
+    }
+
+    WriteByte(CURSOR_PORT_COMMAND, 0xf);
+    WriteByte(CURSOR_PORT_DATA, (u8) (cursor_position & 0xff));
+
+    WriteByte(CURSOR_PORT_COMMAND, 0xe);
+    WriteByte(CURSOR_PORT_DATA, (u8) ((cursor_position >> 8) & 0xff));
 }

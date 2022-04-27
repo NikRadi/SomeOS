@@ -15,7 +15,7 @@ mov bx, HELLO_WORLD_MSG
 call RM_PrintString
 
 mov bx, 0x0002  ; Load the 2nd sector, since 1st is already loaded
-mov cx, 0x0005  ; The number of additional sectors
+mov cx, 0x0004  ; The number of additional sectors
 mov dx, 0x7E00  ; 0x7E00 is 512 bytes after 0x7C00
 call RM_LoadDisk
 
@@ -88,7 +88,7 @@ BeginLongMode:
     call LM_VGAClear
     mov rsi, LONG_MODE_BOOT_MSG
     call LM_VGAPrint
-    call 0x8200     ; Kernel is at 1MB
+    call 0x8200     ; Kernel address (Specified in Kernel/Makefile)
     jmp $
 
 
@@ -99,3 +99,8 @@ VGA_STYLE_BLUE:     equ 0x1f
 LONG_MODE_BOOT_MSG: db `Running in 64-bit long mode`, 0
 
 times 512 - ($ - LONG_MODE_SECTION) db 0x0
+
+
+
+; Why is this section needed? See: https://stackoverflow.com/questions/57730592/error-reading-disk-when-disk-is-not-a-hard-drive-int-0x13-ah-0x02
+; times (512 * 1) db 0x0

@@ -24,4 +24,6 @@ void ClearText(u8 background_color, u8 cursor_color);
 
 void WriteText(char *str, u8 background_color, u8 cursor_color);
 
+void SetCursorPosition(u8 x, u8 y);
+
 #endif // SOMEOS_VGA_H
