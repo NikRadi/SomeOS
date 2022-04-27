@@ -1,6 +1,10 @@
+# Files
 *.bin
 *.img
 *.o
 *.out
 *.txt
 setup_msvc.bat
+
+# Folders
+.vscode/

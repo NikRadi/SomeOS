@@ -15,7 +15,7 @@ mov bx, HELLO_WORLD_MSG
 call RM_PrintString
 
 mov bx, 0x0002  ; Load the 2nd sector, since 1st is already loaded
-mov cx, 0x0004  ; The number of additional sectors
+mov cx, 0x0005  ; The number of additional sectors
 mov dx, 0x7E00  ; 0x7E00 is 512 bytes after 0x7C00
 call RM_LoadDisk
 

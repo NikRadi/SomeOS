@@ -2,8 +2,9 @@
 #include "Port.h"
 
 #define VGA_START 0xb8000
+#define VGA_HEIGHT 25
 #define VGA_WIDTH 80
-#define VGA_SIZE (VGA_WIDTH * 25)
+#define VGA_SIZE (VGA_WIDTH * VGA_HEIGHT)
 
 #define CURSOR_PORT_COMMAND ((u16) 0x3d4)
 #define CURSOR_PORT_DATA    ((u16) 0x3d5)
@@ -45,6 +46,28 @@ static void AdvanceCursor() {
     WriteByte(CURSOR_PORT_DATA, (u8) ((cursor_position >> 8) & 0xff));
 }
 
+static void ScrollLine() {
+    for (u16 i = 1; i < VGA_HEIGHT; ++i) {
+        for (u16 j = 0; j < VGA_WIDTH; ++j) {
+            u16 from_position = j + (i * VGA_WIDTH);
+            u16 to_position = j + ((i - 1) * VGA_WIDTH);
+            text_area[to_position] = text_area[from_position];
+        }
+    }
+
+    u16 i = VGA_HEIGHT - 1;
+    for (u16 j = 0; j < VGA_WIDTH; ++j) {
+        u16 position = j + (i * VGA_WIDTH);
+        VGAChar current_char = text_area[position];
+        VGAChar clear_char;
+        clear_char.character = ' ';
+        clear_char.style = current_char.style;
+        text_area[position] = clear_char;
+    }
+
+    SetCursorPosition(0, VGA_HEIGHT - 1);
+}
+
 void ClearText(u8 background_color, u8 cursor_color) {
     VGAChar clear_char;
     clear_char.character = ' ';
@@ -62,10 +85,22 @@ void WriteText(char *str, u8 background_color, u8 cursor_color) {
             break;
         }
 
-        char_info.character = str[i];
         u16 cursor_position = GetCursorPosition();
-        text_area[cursor_position] = char_info;
-        AdvanceCursor();
+        char c = str[i];
+        if (c == '\n') {
+            u8 current_row = 1 + (u8) (cursor_position / VGA_WIDTH);
+            if (current_row >= VGA_HEIGHT) {
+                ScrollLine();
+            }
+            else {
+                SetCursorPosition(0, current_row);
+            }
+        }
+        else {
+            char_info.character = str[i];
+            text_area[cursor_position] = char_info;
+            AdvanceCursor();
+        }
     }
 }
 
