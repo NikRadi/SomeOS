@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+cd BootLoader || exit 1
+nasm Boot.asm -f bin -o Boot.bin
+cd .. || exit 1
+
+cd Kernel || exit 1
+make
+cd .. || exit 1
+
+cat BootLoader/Boot.bin Kernel/SomeOS.out >SomeOS.img
+echo "File size: $(wc -c <SomeOS.img)"
+qemu-system-x86_64 -drive format=raw,file=SomeOS.img -D log.txt -d cpu_reset
